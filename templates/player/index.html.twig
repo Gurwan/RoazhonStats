@@ -1,0 +1,25 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Hello PlayerController!{% endblock %}
+
+{% block body %}
+<style>
+    .example-wrapper { margin: 1em auto; max-width: 800px; width: 95%; font: 18px/1.5 sans-serif; }
+    .example-wrapper code { background: #F5F5F5; padding: 2px 6px; }
+</style>
+
+<div class="example-wrapper">
+    <h1> Liste des joueurs du SRFC </h1>
+
+    <div>
+        {% for t in tab %}
+            <a href='{{ t[1] }}'>
+                <div style='float: left; margin: 10 10 10 10; '>
+                <img src='{{ t[0] }}'><br/>
+                </div>
+            </a>
+        {% endfor %}
+    </div>
+
+</div>
+{% endblock %}
