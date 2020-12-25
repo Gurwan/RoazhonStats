@@ -42,6 +42,8 @@ class PlayerController extends AbstractController
 
         curl_close($ch);
 
+        
+
         return $this->render('player/index.html.twig', [
             'controller_name' => 'PlayerController', 'tab' => $thetab
         ]);
@@ -52,7 +54,8 @@ class PlayerController extends AbstractController
      */
     public function show_player($id): Response
     {
-        $name = ucwords(str_replace('-',' ',$id));
+        
+
         $url = 'http://www.sofascore.com/team/football/stade-rennais/1658/';
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
@@ -84,26 +87,66 @@ class PlayerController extends AbstractController
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, TRUE);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-
         $response = curl_exec($ch);
+        curl_close($ch);
+
+        if($id=="sehrou-guirassy"){
+            $id = "serhou-guirassy";
+        }
+
+        $name = ucwords(str_replace('-',' ',$id));
+       
 
         preg_match_all("!https://www.sofascore.com/images/player/image_[0-9]*?.png!",$response,$matchesimg);
         $images = array_unique($matchesimg[0]);
     
         $dom = new \DOMDocument();
         @$dom-> loadHTML($response);
-        $h2 = $dom->getElementsByTagName('h2');
-        if($h2->item(5)!==null){
-            $numberh2 = $h2->item(5);
-        } else {
-            $numberh2 = $h2->item(4);
-        }
-        $number = $numberh2->textContent;
 
+        $div = $dom->getElementsByTagName('div');
+        $finder = new \DomXPath($dom);
+        $sousf = $finder->query("//*[contains(@class, 'styles__DetailBoxContent-sc-1ss54tr-12 ExNjU')]"); 
+        $dateNaissance = $sousf[1]->textContent;
+
+        //bon pied manquant pour certains joueurs
+        $surf = $finder->query("//*[contains(@class, 'styles__DetailBoxTitle-sc-1ss54tr-11 gMYPyy')]"); 
+        if($surf->item(5)!==null){
+            $number = $surf->item(5)->textContent;
+            $poste = $surf->item(4)->textContent;
+        } else {
+            $number = $surf->item(4)->textContent;
+            $poste = $surf->item(3)->textContent;
+        }
+        $taille = $surf->item(2)->textContent;
+        $age = $surf->item(1)->textContent;
+        $nationalite = $surf->item(0)->textContent;
+
+        if($poste == "F"){
+            $poste = "Attaquant";
+        } else if($poste == "M"){
+            $poste = "Milieu";
+        } else if($poste == "D"){
+            $poste = "Défenseur";
+        } else {
+            $poste = "Gardien";
+        }
+
+        //contrat
+        /*
+        $url = 'https://rougememoire.com/contracts'; //'http://www.sofascore.com/team/football/stade-rennais/1658/'
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, TRUE);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        $response = curl_exec($ch);
         curl_close($ch);
+        */
+      
 
         return $this->render('player/player_view.html.twig', [
-            'controller_name' => 'PlayerController', 'id' => $name, 'photo' => $images[0], 'numero' => $number
+            'controller_name' => 'PlayerController', 'id' => $name, 'photo' => $images[0], 'numero' => $number, 'poste' => $poste,
+            'nation' => $nationalite, 'age' => $age, 'dateNaissance' => $dateNaissance, 'taille' => $taille
         ]);
     }
 
