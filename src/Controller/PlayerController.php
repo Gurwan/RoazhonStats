@@ -89,14 +89,21 @@ class PlayerController extends AbstractController
 
         preg_match_all("!https://www.sofascore.com/images/player/image_[0-9]*?.png!",$response,$matchesimg);
         $images = array_unique($matchesimg[0]);
-
     
-    
+        $dom = new \DOMDocument();
+        @$dom-> loadHTML($response);
+        $h2 = $dom->getElementsByTagName('h2');
+        if($h2->item(5)!==null){
+            $numberh2 = $h2->item(5);
+        } else {
+            $numberh2 = $h2->item(4);
+        }
+        $number = $numberh2->textContent;
 
         curl_close($ch);
 
         return $this->render('player/player_view.html.twig', [
-            'controller_name' => 'PlayerController', 'id' => $name, 'photo' => $images[0]
+            'controller_name' => 'PlayerController', 'id' => $name, 'photo' => $images[0], 'numero' => $number
         ]);
     }
 
