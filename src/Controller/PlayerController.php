@@ -54,8 +54,24 @@ class PlayerController extends AbstractController
      */
     public function show_player($id): Response
     {
+        $name = ucwords(str_replace('-',' ',$id));
+        $url = 'http://www.sofascore.com/team/football/stade-rennais/1658/';
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, TRUE);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+
+        $response = curl_exec($ch);
+
+        curl_close($ch);
+
+        preg_match_all("!player/[a-z][^\s]*/?!",$response,$ln);
+
+        print_r($ln);
+
         return $this->render('player/player_view.html.twig', [
-            'controller_name' => 'PlayerController', 'id' => $id
+            'controller_name' => 'PlayerController', 'id' => $name
         ]);
     }
 
