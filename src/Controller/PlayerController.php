@@ -24,8 +24,6 @@ class PlayerController extends AbstractController
         //"!https://www.sofascore.com/images/player/image_139228.png!"
 
         $response = curl_exec($ch);
-
-
         
         preg_match_all("!player/[a-z][^\s]*?/[0-9]*?!",$response,$matcheslnplayers);
         preg_match_all("!https://www.sofascore.com/images/player/image_[0-9]*?.png!",$response,$matchesimg);
@@ -66,12 +64,39 @@ class PlayerController extends AbstractController
 
         curl_close($ch);
 
-        preg_match_all("!player/[a-z][^\s]*/?!",$response,$ln);
+        preg_match_all("!player/[a-z][^\s]*/?!",$response,$lna);
+        $ln = array_unique($lna[0]);
+     
+        foreach($ln as $l){
+            if(str_contains($l,$id)){
+                $lnplayer = $l;
+            }
+        }
 
-        print_r($ln);
+        $lnplayer = explode(">",$lnplayer,2);
+        $lnplayer = $lnplayer[0];
+        $lnplayer = explode('"',$lnplayer,2);
+        $lnplayer = $lnplayer[0];
+
+        $url = "http://www.sofascore.com/$lnplayer";
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, TRUE);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+
+        $response = curl_exec($ch);
+
+        preg_match_all("!https://www.sofascore.com/images/player/image_[0-9]*?.png!",$response,$matchesimg);
+        $images = array_unique($matchesimg[0]);
+
+    
+    
+
+        curl_close($ch);
 
         return $this->render('player/player_view.html.twig', [
-            'controller_name' => 'PlayerController', 'id' => $name
+            'controller_name' => 'PlayerController', 'id' => $name, 'photo' => $images[0]
         ]);
     }
 
