@@ -167,56 +167,88 @@ class PlayerController extends AbstractController
             }
         }
        
-        $lnstatsplayer = explode('>',$lnstatsplayer);
-        $lnstatsplayer = $lnstatsplayer[0];
-        $lnstatsplayer = substr($lnstatsplayer,1,-1);
+        if(isset($lnstatsplayer)){
+            $lnstatsplayer = explode('>',$lnstatsplayer);
+            $lnstatsplayer = $lnstatsplayer[0];
+            $lnstatsplayer = substr($lnstatsplayer,1,-1);
+            
+            //stats du joueur
+            $url = "https://www.statbunker.com$lnstatsplayer&comps_type=-1&dates=-1";
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $url);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            curl_setopt($ch, CURLOPT_FOLLOWLOCATION, TRUE);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+            $response = curl_exec($ch);
+            curl_close($ch);
+
+            $dom = new \DOMDocument();
+            @$dom-> loadHTML($response);
+
+            $finder = new \DomXPath($dom);
         
-        //stats du joueur
-        $url = "https://www.statbunker.com$lnstatsplayer&comps_type=-1&dates=-1";
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, TRUE);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        $response = curl_exec($ch);
-        curl_close($ch);
+            $statstable = $finder->query("//*[contains(@class, 'table')]")->item(0); 
+            $rows = $statstable->getElementsByTagName("tr");
 
-        $dom = new \DOMDocument();
-        @$dom-> loadHTML($response);
-
-        $finder = new \DomXPath($dom);
-     
-        $statstable = $finder->query("//*[contains(@class, 'table')]")->item(0); 
-        $rows = $statstable->getElementsByTagName("tr");
-
-        $i = 0;
-        $saisons = array();
-        foreach ($rows as $row) {
-            $cells = $row -> getElementsByTagName('td');
-            $line = array();
-            foreach ($cells as $cell) {
-                if($i%13==0){
-                    if(empty($cell->nodeValue)){
-                        $cell->nodeValue = "TOTAL";
-                    } else {
-                        $explodeseason = explode(' ',$cell->nodeValue);
-                        $cell->nodeValue = $explodeseason[-1];
-                    }
-                    array_push($line,$cell->nodeValue);
-                } else if($i%13==2 || $i%13==4) {
-                    if($cell->nodeValue=="-"){
-                        $cell->nodeValue = 0;
-                    }
-                    array_push($line,$cell->nodeValue);
-                } else if($i%13==10 || $i%13==11){
-                    if($cell->nodeValue=="-"){
-                        $cell->nodeValue = 0;
-                    }
-                    array_push($line,$cell->nodeValue);
-                } 
-                $i++; 
+            $i = 0;
+            $saisons = array();
+            foreach ($rows as $row) {
+                $cells = $row -> getElementsByTagName('td');
+                $line = array();
+                foreach ($cells as $cell) {
+                    if($i%13==0){
+                        if(empty($cell->nodeValue)){
+                            $cell->nodeValue = "TOTAL";
+                        } else {
+                            $explodeseason = explode(' ',$cell->nodeValue);
+                            $cell->nodeValue = end($explodeseason);
+                        }
+                        array_push($line,$cell->nodeValue);
+                    } else if($i%13==1){
+                        if(empty($cell->nodeValue)){
+                            $cell->nodeValue = "TOTAL";
+                        } 
+                        array_push($line,$cell->nodeValue);
+                    } else if($i%13==2 || $i%13==4) {
+                        if($cell->nodeValue=="-"){
+                            $cell->nodeValue = 0;
+                        }
+                        array_push($line,$cell->nodeValue);
+                    } else if($i%13==10 || $i%13==11){
+                        if($cell->nodeValue=="-"){
+                            $cell->nodeValue = 0;
+                        }
+                        array_push($line,$cell->nodeValue);
+                    } 
+                    $i++; 
+                }
+                array_push($saisons,$line);
             }
-            array_push($saisons,$line);
+
+        
+            for($j = 0; $j<count($saisons)-1;$j++){
+                if(empty($saisons[$j][0])){
+                    continue;
+                }
+
+                if($saisons[$j][1]=="Stade Rennes "){
+                    $saisons[$j][1]="Stade Rennais";
+                } 
+
+                if($saisons[$j][0]==$saisons[$j+1][0]){
+                    $saisons[$j][2] = $saisons[$j][2]+$saisons[$j+1][2];
+                    $saisons[$j][3] = $saisons[$j][3]+$saisons[$j+1][3];
+                    $saisons[$j][4] = $saisons[$j][4]+$saisons[$j+1][4];
+                    $saisons[$j][5] = $saisons[$j][5]+$saisons[$j+1][5];
+                    unset($saisons[$j+1]);
+                } 
+
+                $saisons[$j][2]=$saisons[$j][2]+$saisons[$j][3];
+                unset($saisons[$j][3]);
+            }
+         
+        } else {
+            $saisons = array(array(),array("20/21","Stade Rennais",0,0,0),array("TOTAL","TOTAL",0,0,0));
         }
 
         print_r($saisons);
@@ -224,7 +256,7 @@ class PlayerController extends AbstractController
 
         return $this->render('player/player_view.html.twig', [
             'controller_name' => 'PlayerController', 'id' => $name, 'photo' => $images[0], 'numero' => $number, 'poste' => $poste,
-            'nation' => $nationalite, 'age' => $age, 'dateNaissance' => $dateNaissance, 'taille' => $taille
+            'nation' => $nationalite, 'age' => $age, 'dateNaissance' => $dateNaissance, 'taille' => $taille, 'tabstats' => $saisons
         ]);
     }
 
