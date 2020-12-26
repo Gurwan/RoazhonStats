@@ -139,7 +139,7 @@ class PlayerController extends AbstractController
         }
 
         //liste des joueurs avec lien vers stats
-        $url = 'https://www.statbunker.com/competitions/getCompClubSquad?comp_id=666&club_id=71';
+        $url = 'https://fr.wikipedia.org/wiki/Stade_rennais_football_club#Effectif_professionnel_actuel';
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
@@ -148,19 +148,50 @@ class PlayerController extends AbstractController
         $response = curl_exec($ch);
         curl_close($ch);
       
-        preg_match_all("![^\s]\/players\/GetHistoryStats\?player_id=[0-9]*[^\s]><p>[^\s]*\s[^\s]*</p>!",$response,$lnstatstwo);
-        $lnstatsplayers = array_unique($lnstatstwo[0]);
-        preg_match_all("![^\s]\/players\/GetHistoryStats\?player_id=[0-9]*[^\s]><p>[^\s]*\s[^\s]*\s[^\s]*</p>!",$response,$lnstatsthree);
-        $lnstatsplayers3 = array_unique($lnstatsthree[0]);
-        $lnstatsplayers = array_merge($lnstatsplayers,$lnstatsplayers3);
-        //print_r($lnstatsplayers);
         $nom = explode(' ',$name);
-        if(empty($nom[2])){
-            $nom = $nom[1];
+        $prenom = $nom[0];
+        if(empty($nom[1])){
+            $lnstatsplayersnom = array();
         } else {
-            $nom = $nom[1].' '.$nom[2];
+            if(empty($nom[2])){
+                $nom = $nom[1];
+            } else {
+                $nom = $nom[1].' '.$nom[2];
+            }
+            preg_match_all("!\/wiki\/[^\s]*_$nom!",$response,$lnstatsnom);
+            $lnstatsplayersnom = array_unique($lnstatsnom[0]);
+            
         }
-       
+        
+        preg_match_all("!\/wiki\/$prenom\_[^\s]*!",$response,$lnstatstwo);
+        $lnstatsplayers = array_unique($lnstatstwo[0]);
+        
+        preg_match_all("!\/wiki\/$prenom\_[^\s]*_[^\s]*!",$response,$lnstatsthree);
+        $lnstatsplayers3 = array_unique($lnstatsthree[0]);
+        preg_match_all("!\/wiki\/[^\s]*_$prenom!",$response,$lnstatsinvert);
+        $lnstatsplayersinvert = array_unique($lnstatsinvert[0]);
+        $lnstatsplayers = array_merge($lnstatsplayers,$lnstatsplayers3);
+        $lnstatsplayers = array_merge($lnstatsplayers,$lnstatsplayersinvert);
+        $lnstatsplayers = array_merge($lnstatsplayers,$lnstatsplayersnom);
+        
+        foreach($lnstatsplayers as $l){
+            if(str_contains($l,$nom)){
+                $lnstatsplayer = $l;
+            }
+        }
+
+        //ne marche pas -> plusieurs personnes avec même prénom !!
+
+        if($lnstatsplayer[-1]=='"'){
+            $lnstatsplayer = substr($lnstatsplayer,0,-1);
+        }
+        echo $lnstatsplayer;
+
+
+        
+        
+
+        /*
         foreach($lnstatsplayers as $l){
             if(str_contains($l,$nom)){
                 $lnstatsplayer = $l;
@@ -188,7 +219,7 @@ class PlayerController extends AbstractController
             $finder = new \DomXPath($dom);
         
             $statstable = $finder->query("//*[contains(@class, 'table')]")->item(0); 
-            $rows = $statstable->getElementsByTagName("tr");
+            $rows = $statstable->getElementsByTagName('tr');
 
             $i = 0;
             $saisons = array();
@@ -225,15 +256,20 @@ class PlayerController extends AbstractController
                 array_push($saisons,$line);
             }
 
+            array_shift($saisons);
+            print_r($saisons);
         
             for($j = 0; $j<count($saisons);$j++){
+                
                 if(empty($saisons[$j][0])){
                     continue;
                 }
 
-                if($saisons[$j][1]=="Stade Rennes "){
+                if($saisons[$j][1]=="Stade Rennes " || $saisons[$j][1]==" Stade Rennes " || $saisons[$j][1]=="Stade Rennes" || $saisons[$j][1]==" Stade Rennes"){
                     $saisons[$j][1]="Stade Rennais";
-                } 
+                } else {
+                    print $saisons[$j][1];
+                }
 
                 if($j!=count($saisons)-1){
                     if($saisons[$j][0]==$saisons[$j+1][0]){
@@ -250,13 +286,13 @@ class PlayerController extends AbstractController
                 unset($saisons[$j][3]);
             }
         } else {
-            $saisons = array(array(),array("20/21","Stade Rennais",0,0,0),array("TOTAL","TOTAL",0,0,0));
+            $saisons = array(array("20/21","Stade Rennais",0,0,0),array("TOTAL","TOTAL",0,0,0));
         }
+        */
 
-        unset($saisons[0]);
         //print_r($saisons);
        
-
+        $saisons = array(array("20/21","Stade Rennais",0,0,0),array("TOTAL","TOTAL",0,0,0));
         return $this->render('player/player_view.html.twig', [
             'controller_name' => 'PlayerController', 'id' => $name, 'photo' => $images[0], 'numero' => $number, 'poste' => $poste,
             'nation' => $nationalite, 'age' => $age, 'dateNaissance' => $dateNaissance, 'taille' => $taille, 'tabstats' => $saisons
