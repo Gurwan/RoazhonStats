@@ -12,10 +12,35 @@
     <div style='float: left; margin: 10 10 10 10; '>
     <img src='{{ photo }}'><br/>
     </div>
-    <div>
+    <div class="hautdroite">
     <h1> {{numero}}.{{id}} </h1> 
     <h3> {{poste}} </h2> 
     <h3> {{nation}} - {{age}} ans ({{dateNaissance}}) </h3>    <h3> {{taille}} </h3>
+    </div>
+    <hr>
+    <div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Year</th>
+                    <th>Team</th>
+                    <th>Apps</th>
+                    <th>Goals</th>
+                    <th>Assists</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for t in tabstats %}
+                    <tr>
+                        <td>{{t[0]}}</td>
+                        <td>{{t[1]}}</td>
+                        <td>{{t[2]}}</td>
+                        <td>{{t[4]}}</td>
+                        <td>{{t[5]}}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
 
 </div>

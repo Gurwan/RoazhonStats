@@ -226,7 +226,7 @@ class PlayerController extends AbstractController
             }
 
         
-            for($j = 0; $j<count($saisons)-1;$j++){
+            for($j = 0; $j<count($saisons);$j++){
                 if(empty($saisons[$j][0])){
                     continue;
                 }
@@ -235,23 +235,26 @@ class PlayerController extends AbstractController
                     $saisons[$j][1]="Stade Rennais";
                 } 
 
-                if($saisons[$j][0]==$saisons[$j+1][0]){
-                    $saisons[$j][2] = $saisons[$j][2]+$saisons[$j+1][2];
-                    $saisons[$j][3] = $saisons[$j][3]+$saisons[$j+1][3];
-                    $saisons[$j][4] = $saisons[$j][4]+$saisons[$j+1][4];
-                    $saisons[$j][5] = $saisons[$j][5]+$saisons[$j+1][5];
-                    unset($saisons[$j+1]);
-                } 
+                if($j!=count($saisons)-1){
+                    if($saisons[$j][0]==$saisons[$j+1][0]){
+                        $saisons[$j][2] = $saisons[$j][2]+$saisons[$j+1][2];
+                        $saisons[$j][3] = $saisons[$j][3]+$saisons[$j+1][3];
+                        $saisons[$j][4] = $saisons[$j][4]+$saisons[$j+1][4];
+                        $saisons[$j][5] = $saisons[$j][5]+$saisons[$j+1][5];
+                        unset($saisons[$j+1]);
+                    } 
+                }
+               
 
                 $saisons[$j][2]=$saisons[$j][2]+$saisons[$j][3];
                 unset($saisons[$j][3]);
             }
-         
         } else {
             $saisons = array(array(),array("20/21","Stade Rennais",0,0,0),array("TOTAL","TOTAL",0,0,0));
         }
 
-        print_r($saisons);
+        unset($saisons[0]);
+        //print_r($saisons);
        
 
         return $this->render('player/player_view.html.twig', [
