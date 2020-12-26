@@ -9,6 +9,14 @@ use Symfony\Component\Routing\Annotation\Route;
 class PlayerController extends AbstractController
 {
     /**
+     * @Route("/", name="main")
+     */
+    public function main(): Response 
+    {
+        return $this->redirect('/player');
+    }
+
+    /**
      * @Route("/player", name="player")
      */
     public function index(): Response
@@ -103,7 +111,6 @@ class PlayerController extends AbstractController
         $dom = new \DOMDocument();
         @$dom-> loadHTML($response);
 
-        $div = $dom->getElementsByTagName('div');
         $finder = new \DomXPath($dom);
         $sousf = $finder->query("//*[contains(@class, 'styles__DetailBoxContent-sc-1ss54tr-12 ExNjU')]"); 
         $dateNaissance = $sousf[1]->textContent;
@@ -131,9 +138,8 @@ class PlayerController extends AbstractController
             $poste = "Gardien";
         }
 
-        //contrat
-        /*
-        $url = 'https://rougememoire.com/contracts'; //'http://www.sofascore.com/team/football/stade-rennais/1658/'
+        //liste des joueurs avec lien vers stats
+        $url = 'https://www.statbunker.com/competitions/getCompClubSquad?comp_id=666&club_id=71';
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
@@ -141,8 +147,80 @@ class PlayerController extends AbstractController
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         $response = curl_exec($ch);
         curl_close($ch);
-        */
       
+        preg_match_all("![^\s]\/players\/GetHistoryStats\?player_id=[0-9]*[^\s]><p>[^\s]*\s[^\s]*</p>!",$response,$lnstatstwo);
+        $lnstatsplayers = array_unique($lnstatstwo[0]);
+        preg_match_all("![^\s]\/players\/GetHistoryStats\?player_id=[0-9]*[^\s]><p>[^\s]*\s[^\s]*\s[^\s]*</p>!",$response,$lnstatsthree);
+        $lnstatsplayers3 = array_unique($lnstatsthree[0]);
+        $lnstatsplayers = array_merge($lnstatsplayers,$lnstatsplayers3);
+        //print_r($lnstatsplayers);
+        $nom = explode(' ',$name);
+        if(empty($nom[2])){
+            $nom = $nom[1];
+        } else {
+            $nom = $nom[1].' '.$nom[2];
+        }
+       
+        foreach($lnstatsplayers as $l){
+            if(str_contains($l,$nom)){
+                $lnstatsplayer = $l;
+            }
+        }
+       
+        $lnstatsplayer = explode('>',$lnstatsplayer);
+        $lnstatsplayer = $lnstatsplayer[0];
+        $lnstatsplayer = substr($lnstatsplayer,1,-1);
+        
+        //stats du joueur
+        $url = "https://www.statbunker.com$lnstatsplayer&comps_type=-1&dates=-1";
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, TRUE);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        $response = curl_exec($ch);
+        curl_close($ch);
+
+        $dom = new \DOMDocument();
+        @$dom-> loadHTML($response);
+
+        $finder = new \DomXPath($dom);
+     
+        $statstable = $finder->query("//*[contains(@class, 'table')]")->item(0); 
+        $rows = $statstable->getElementsByTagName("tr");
+
+        $i = 0;
+        $saisons = array();
+        foreach ($rows as $row) {
+            $cells = $row -> getElementsByTagName('td');
+            $line = array();
+            foreach ($cells as $cell) {
+                if($i%13==0){
+                    if(empty($cell->nodeValue)){
+                        $cell->nodeValue = "TOTAL";
+                    } else {
+                        $explodeseason = explode(' ',$cell->nodeValue);
+                        $cell->nodeValue = $explodeseason[-1];
+                    }
+                    array_push($line,$cell->nodeValue);
+                } else if($i%13==2 || $i%13==4) {
+                    if($cell->nodeValue=="-"){
+                        $cell->nodeValue = 0;
+                    }
+                    array_push($line,$cell->nodeValue);
+                } else if($i%13==10 || $i%13==11){
+                    if($cell->nodeValue=="-"){
+                        $cell->nodeValue = 0;
+                    }
+                    array_push($line,$cell->nodeValue);
+                } 
+                $i++; 
+            }
+            array_push($saisons,$line);
+        }
+
+        print_r($saisons);
+       
 
         return $this->render('player/player_view.html.twig', [
             'controller_name' => 'PlayerController', 'id' => $name, 'photo' => $images[0], 'numero' => $number, 'poste' => $poste,
