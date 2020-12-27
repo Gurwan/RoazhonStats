@@ -210,87 +210,111 @@ class PlayerController extends AbstractController
     
             $finder = new \DomXPath($dom);
             
-            $statstable = $finder->query("//*[contains(@class, 'wikitable alternance2')]")->item(0); 
-            $th = $statstable->getElementsByTagName('th');
-            $assists = false;
-            foreach($th as $t){
-                if($t->nodeValue == "Pd"){
-                    $assists = true;
-                    break;
-                }
-            }
-            $rows = $statstable->getElementsByTagName('tr');
-            $saisons = array();
-            $j = 0;
-            if($assists){
-                foreach ($rows as $row) {
-                    $cells = $row -> getElementsByTagName('td');
-                    $line = array();
-                    $i = 0;
-                    if(isset($cells[1]->nodeValue)){
-                        //eviter d'enregistrer les sous totaux
-                        if(is_numeric($cells[1]->nodeValue) && $j!= count($rows)-1){
-                            $j++;
-                            continue;
-                        } else {
-                            $passageTotal = true;
-                            foreach ($cells as $cell) {
-                                //eviter d'enregistrer le total entier
-                                if($j != count($rows)-1){
-                                    if($i==0 || $i==1 || $i==count($cells)-3 || $i==count($cells)-2 || $i==count($cells)-1){
-                                        array_push($line,$cell->nodeValue);
-                                    }
-                                } else {
-                                    if($passageTotal){
-                                        array_push($line,"");
-                                        array_push($line,"");
-                                    }
-                                    $passageTotal = false;
-                                    if( $i==count($cells)-3 || $i==count($cells)-2 || $i==count($cells)-1 ){
-                                        array_push($line,$cell->nodeValue);
-                                    }
-                                }
-                                $i++;
-                            }
-                            array_push($saisons,$line);
-                        }
-                    }
-                    $j++;
-                }
+            //parcours amateur sur page de Grenier
+            if($nom=="Grenier"){
+                $statstable = $finder->query("//*[contains(@class, 'wikitable alternance2')]")->item(1); 
             } else {
-                foreach ($rows as $row) {
-                    $cells = $row -> getElementsByTagName('td');
-                    $line = array();
-                    $i = 0;
-                    if(isset($cells[1]->nodeValue)){
-                        //eviter d'enregistrer les sous totaux
-                        if(is_numeric($cells[1]->nodeValue) && $j!= count($rows)-1){
-                            $j++;
-                            continue;
-                        } else {
-                            foreach ($cells as $cell) {
-                                //eviter d'enregistrer le total entier
-                                if($j != count($rows)-1){
-                                    if($i==0 || $i==1 || $i==count($cells)-2 || $i==count($cells)-1 ){
-                                        array_push($line,$cell->nodeValue);
-                                    }
-                                } else {
-                                    array_push($line,"");
-                                    if( $i==count($cells)-2 || $i==count($cells)-1 ){
-                                        array_push($line,$cell->nodeValue);
-                                    }
-                                }
-                                $i++;
-                            }
-                            array_push($saisons,$line);
-                        }
+                $statstable = $finder->query("//*[contains(@class, 'wikitable alternance2')]")->item(0); 
+            }
+            
+
+            if(empty($statstable)){
+                $saisons = array(array("20/21","Stade Rennais FC",0,0,0),array("TOTAL","TOTAL",0,0,0));
+                echo "<strong>Problème de redirection sur Wikipedia pour le lien https://fr.wikipedia.org$lnstatsplayer</strong><br>
+                <strong>Pour régler le problème -> créer une redirection vers la bonne page depuis Wikipédia</strong>";
+                //doku grenier lea siliki traore
+            } else {
+                $th = $statstable->getElementsByTagName('th');
+                $assists = false;
+                foreach($th as $t){
+                    if($t->nodeValue == "Pd"){
+                        $assists = true;
+                        break;
                     }
-                    $j++;
+                }
+                $rows = $statstable->getElementsByTagName('tr');
+                $saisons = array();
+                $j = 0;
+                if($assists){
+                    foreach ($rows as $row) {
+                        $cells = $row -> getElementsByTagName('td');
+                        $line = array();
+                        $i = 0;
+                        if(isset($cells[1]->nodeValue)){
+                            //eviter d'enregistrer les sous totaux
+                            if(is_numeric($cells[1]->nodeValue) && $j!= count($rows)-1){
+                                $j++;
+                                continue;
+                            } else {
+                                $passageTotal = true;
+                                foreach ($cells as $cell) {
+                                    //eviter d'enregistrer le total entier
+                                    if($j != count($rows)-1){
+                                        if($i==0 || $i==1 || $i==count($cells)-3 || $i==count($cells)-2 || $i==count($cells)-1){
+                                            array_push($line,$cell->nodeValue);
+                                        }
+                                    } else {
+                                        if($passageTotal){
+                                            array_push($line,"");
+                                            array_push($line,"");
+                                        }
+                                        $passageTotal = false;
+                                        if( $i==count($cells)-3 || $i==count($cells)-2 || $i==count($cells)-1 ){
+                                            array_push($line,$cell->nodeValue);
+                                        }
+                                    }
+                                    $i++;
+                                }
+                                array_push($saisons,$line);
+                            }
+                        }
+                        $j++;
+                    }
+                } else {
+                    foreach ($rows as $row) {
+                        $cells = $row -> getElementsByTagName('td');
+                        $line = array();
+                        $i = 0;
+                        if(isset($cells[1]->nodeValue)){
+                            //eviter d'enregistrer les sous totaux
+                            if(is_numeric($cells[1]->nodeValue) && $j!= count($rows)-1){
+                                $j++;
+                                continue;
+                            } else {
+                                foreach ($cells as $cell) {
+                                    //eviter d'enregistrer le total entier
+                                    if($j != count($rows)-1){
+                                        if($i==0 || $i==1 || $i==count($cells)-2 || $i==count($cells)-1 ){
+                                            array_push($line,$cell->nodeValue);
+                                        }
+                                    } else {
+                                        array_push($line,"");
+                                        if( $i==count($cells)-2 || $i==count($cells)-1 ){
+                                            array_push($line,$cell->nodeValue);
+                                        }
+                                    }
+                                    $i++;
+                                }
+                                array_push($saisons,$line);
+                            }
+                        }
+                        $j++;
+                    }
+                }
+            
+                for($j = 0; $j<count($saisons);$j++){
+                    if(empty($saisons[$j][0])){
+                        continue;
+                    }
+                    if($saisons[$j][1]==" Stade rennais FC" || $saisons[$j][1]==" Stade rennais FC " || $saisons[$j][1]=="Stade rennais FC " || $saisons[$j][1]=="Stade rennais FC"){
+                        $saisons[$j][1]="Stade Rennais FC";
+                    }
                 }
             }
-            array_reverse($saisons);
         } else {
-            $saisons = array(array("20/21","Stade Rennais",0,0,0),array("TOTAL","TOTAL",0,0,0));
+            $saisons = array(array("2020-2021","Stade Rennais FC",0,0,0),array("TOTAL","TOTAL",0,0,0));
+            echo "<strong>Le joueur n'a pas de page sur Wikipedia donc pas de stats</strong><br>
+                <strong>Pour régler le problème -> créer une page pour ce joueur sur Wikipédia avec comme URL : https://fr.wikipedia.org/$prenom"."_"."$nom</strong>";
         }
        
         return $this->render('player/player_view.html.twig', [
