@@ -211,37 +211,82 @@ class PlayerController extends AbstractController
             $finder = new \DomXPath($dom);
             
             $statstable = $finder->query("//*[contains(@class, 'wikitable alternance2')]")->item(0); 
+            $th = $statstable->getElementsByTagName('th');
+            $assists = false;
+            foreach($th as $t){
+                if($t->nodeValue == "Pd"){
+                    $assists = true;
+                    break;
+                }
+            }
             $rows = $statstable->getElementsByTagName('tr');
             $saisons = array();
             $j = 0;
-            foreach ($rows as $row) {
-                $cells = $row -> getElementsByTagName('td');
-                $line = array();
-                $i = 0;
-                if(isset($cells[1]->nodeValue)){
-                    //eviter d'enregistrer les sous totaux
-                    if(is_numeric($cells[1]->nodeValue) && $j!= count($rows)-1){
-                        $j++;
-                        continue;
-                    } else {
-                        foreach ($cells as $cell) {
-                            //eviter d'enregistrer le total entier
-                            if($j != count($rows)-1){
-                                if($i==0 || $i==1 || $i==count($cells)-2 || $i==count($cells)-1 ){
-                                    array_push($line,$cell->nodeValue);
+            if($assists){
+                foreach ($rows as $row) {
+                    $cells = $row -> getElementsByTagName('td');
+                    $line = array();
+                    $i = 0;
+                    if(isset($cells[1]->nodeValue)){
+                        //eviter d'enregistrer les sous totaux
+                        if(is_numeric($cells[1]->nodeValue) && $j!= count($rows)-1){
+                            $j++;
+                            continue;
+                        } else {
+                            $passageTotal = true;
+                            foreach ($cells as $cell) {
+                                //eviter d'enregistrer le total entier
+                                if($j != count($rows)-1){
+                                    if($i==0 || $i==1 || $i==count($cells)-3 || $i==count($cells)-2 || $i==count($cells)-1){
+                                        array_push($line,$cell->nodeValue);
+                                    }
+                                } else {
+                                    if($passageTotal){
+                                        array_push($line,"");
+                                        array_push($line,"");
+                                    }
+                                    $passageTotal = false;
+                                    if( $i==count($cells)-3 || $i==count($cells)-2 || $i==count($cells)-1 ){
+                                        array_push($line,$cell->nodeValue);
+                                    }
                                 }
-                            } else {
-                                array_push($line,"");
-                                if( $i==count($cells)-2 || $i==count($cells)-1 ){
-                                    array_push($line,$cell->nodeValue);
-                                }
+                                $i++;
                             }
-                            $i++;
+                            array_push($saisons,$line);
                         }
-                        array_push($saisons,$line);
                     }
+                    $j++;
                 }
-                $j++;
+            } else {
+                foreach ($rows as $row) {
+                    $cells = $row -> getElementsByTagName('td');
+                    $line = array();
+                    $i = 0;
+                    if(isset($cells[1]->nodeValue)){
+                        //eviter d'enregistrer les sous totaux
+                        if(is_numeric($cells[1]->nodeValue) && $j!= count($rows)-1){
+                            $j++;
+                            continue;
+                        } else {
+                            foreach ($cells as $cell) {
+                                //eviter d'enregistrer le total entier
+                                if($j != count($rows)-1){
+                                    if($i==0 || $i==1 || $i==count($cells)-2 || $i==count($cells)-1 ){
+                                        array_push($line,$cell->nodeValue);
+                                    }
+                                } else {
+                                    array_push($line,"");
+                                    if( $i==count($cells)-2 || $i==count($cells)-1 ){
+                                        array_push($line,$cell->nodeValue);
+                                    }
+                                }
+                                $i++;
+                            }
+                            array_push($saisons,$line);
+                        }
+                    }
+                    $j++;
+                }
             }
             array_reverse($saisons);
         } else {
