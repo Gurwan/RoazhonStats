@@ -151,45 +151,62 @@ class PlayerController extends AbstractController
         $nom = explode(' ',$name);
         $prenom = $nom[0];
         if(empty($nom[1])){
-            $lnstatsplayersnom = array();
+            unset($nom);
         } else {
             if(empty($nom[2])){
                 $nom = $nom[1];
             } else {
-                $nom = $nom[1].' '.$nom[2];
+                $nom = $nom[1].'_'.$nom[2];
             }
-            preg_match_all("!\/wiki\/[^\s]*_$nom!",$response,$lnstatsnom);
-            $lnstatsplayersnom = array_unique($lnstatsnom[0]);
-            
+        }
+
+        preg_match_all("!\/wiki\/[A-z][^\s]*!",$response,$lnallnamewiki);
+        $lnallnamewiki = array_unique($lnallnamewiki[0]);
+        $lnallnamewiki = str_replace('%C3%A9','e',$lnallnamewiki);
+        $lnallnamewiki = str_replace('%27B','b',$lnallnamewiki);
+        $lnallnamewiki = str_replace('%27','',$lnallnamewiki);
+        
+        if(isset($nom)){
+            foreach($lnallnamewiki as $l){
+                if(str_contains($l,$nom) && str_contains($l,$prenom)){
+                    $lnstatsplayer = $l;
+                }
+            }
+    
+            if(!(isset($lnstatsplayer))){
+                foreach($lnallnamewiki as $l){
+                    if(str_contains($l,$nom)){
+                        $lnstatsplayer = $l;
+                    }
+                }
+            }
         }
         
-        preg_match_all("!\/wiki\/$prenom\_[^\s]*!",$response,$lnstatstwo);
-        $lnstatsplayers = array_unique($lnstatstwo[0]);
-        
-        preg_match_all("!\/wiki\/$prenom\_[^\s]*_[^\s]*!",$response,$lnstatsthree);
-        $lnstatsplayers3 = array_unique($lnstatsthree[0]);
-        preg_match_all("!\/wiki\/[^\s]*_$prenom!",$response,$lnstatsinvert);
-        $lnstatsplayersinvert = array_unique($lnstatsinvert[0]);
-        $lnstatsplayers = array_merge($lnstatsplayers,$lnstatsplayers3);
-        $lnstatsplayers = array_merge($lnstatsplayers,$lnstatsplayersinvert);
-        $lnstatsplayers = array_merge($lnstatsplayers,$lnstatsplayersnom);
-        
-        foreach($lnstatsplayers as $l){
-            if(str_contains($l,$nom)){
-                $lnstatsplayer = $l;
+
+        if(!(isset($lnstatsplayer))){
+            foreach($lnallnamewiki as $l){
+                if(str_contains($l,$prenom)){
+                    $lnstatsplayer = $l;
+                }
             }
+        }
+
+        if(isset($lnstatsplayer)){
+            if($lnstatsplayer[-1]=='"'){
+                $lnstatsplayer = substr($lnstatsplayer,0,-1);
+            }
+            echo $lnstatsplayer;
+        } else {
+            $saisons = array(array("20/21","Stade Rennais",0,0,0),array("TOTAL","TOTAL",0,0,0));
         }
 
         //ne marche pas -> plusieurs personnes avec même prénom !!
 
-        if($lnstatsplayer[-1]=='"'){
-            $lnstatsplayer = substr($lnstatsplayer,0,-1);
-        }
-        echo $lnstatsplayer;
+        
+ 
 
 
-        
-        
+
 
         /*
         foreach($lnstatsplayers as $l){
