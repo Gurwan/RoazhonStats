@@ -162,9 +162,6 @@ class PlayerController extends AbstractController
 
         preg_match_all("!\/wiki\/[A-z][^\s]*!",$response,$lnallnamewiki);
         $lnallnamewiki = array_unique($lnallnamewiki[0]);
-        $lnallnamewiki = str_replace('%C3%A9','e',$lnallnamewiki);
-        $lnallnamewiki = str_replace('%27B','b',$lnallnamewiki);
-        $lnallnamewiki = str_replace('%27','',$lnallnamewiki);
         
         if(isset($nom)){
             foreach($lnallnamewiki as $l){
