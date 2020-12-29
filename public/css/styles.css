@@ -4,7 +4,7 @@
     font-size: 45px;
     font-family:"Segoe print", Arial, Helvetica, sans-serif;
     color: red; 
-     text-align: center;
+    text-align: center;
     margin-top: 0px;
     background-image: url("../img/background_black.png");
 }
@@ -21,6 +21,32 @@ img {
 .playerPicture {
     float: left;  
     margin-top: 20px;
-    margin-right: 10px;
-    margin-left: 10px;
+    margin-right: 20px;
 }
+
+.aComponentPlayer{
+    display:grid; 
+    text-decoration:none; 
+}
+   
+.aComponentPlayer>*{
+    grid-area:1/1/-1/-1; 
+}
+   
+.spanComponentPlayer{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    color:black;
+    font-size: 15px;
+    font-weight: bold;
+    font-family:"Segoe print", Arial, Helvetica, sans-serif;
+    opacity:0;
+    transition:opacity .8s;
+}
+
+.spanComponentPlayer:hover{
+    opacity:1;
+}
+   
+   

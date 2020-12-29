@@ -43,7 +43,10 @@ class PlayerController extends AbstractController
         $thetab = array();
         $j = 0;
         foreach ($images as $i){
-            $tab = array($i,$playersln[$j]);
+            $playerName = explode('/',$playersln[$j]);
+            $playerName = $playerName[1];
+            $playerName = ucwords(str_replace('-',' ',$playerName));
+            $tab = array($i,$playersln[$j],$playerName);
             array_push($thetab,$tab);
             $j++;
         }

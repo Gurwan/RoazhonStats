@@ -14,10 +14,9 @@
     <div>
         {% for t in tab %}
             <div class="playerPicture">
-                <a href='{{ t[1] }}'>
-                    <div>
-                    <img src='{{ t[0] }}'><br/>
-                    </div>
+                <a class="aComponentPlayer" href='{{ t[1] }}'>
+                    <img class="imgComponentPlayer" src='{{ t[0] }}'><br/>
+                    <span class="spanComponentPlayer">{{ t[2] }}</span>
                 </a>
             </div>
         {% endfor %}
