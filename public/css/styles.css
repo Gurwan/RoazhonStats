@@ -6,11 +6,21 @@
     color: red; 
      text-align: center;
     margin-top: 0px;
-    background-image: url("../img/test.png");
+    background-image: url("../img/background_black.png");
 }
 
 * {
-    background-image: url("../img/test2.png");
+    background-image: url("../img/background_red.png");
     background-repeat: repeat;
 }
 
+img {
+    border-radius: 40%;
+}
+
+.playerPicture {
+    float: left;  
+    margin-top: 20px;
+    margin-right: 10px;
+    margin-left: 10px;
+}
