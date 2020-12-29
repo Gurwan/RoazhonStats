@@ -2,4 +2,30 @@
 
 img {
     border-radius: 40%;
+    grid-column: 1;
+    grid-row: 1;
+}
+
+
+.wrapper {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-gap: 10px;
+    grid-auto-rows: minmax(100px, auto);
+}
+
+
+.hautdroite {
+    grid-column: 2/4;
+    grid-row: 1;
+}
+
+.divhr {
+    grid-row: 2;
+    grid-column: 1/4;
+}
+
+.tableau {
+    grid-column: 1/4;
+    grid-row:3;
 }

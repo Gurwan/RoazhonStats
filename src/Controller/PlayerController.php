@@ -211,13 +211,16 @@ class PlayerController extends AbstractController
             $finder = new \DomXPath($dom);
             
             //parcours amateur sur page de Grenier
-            if($nom=="Grenier"){
-                $statstable = $finder->query("//*[contains(@class, 'wikitable alternance2')]")->item(1); 
+            if(isset($nom)){
+                if($nom=="Grenier"){
+                    $statstable = $finder->query("//*[contains(@class, 'wikitable alternance2')]")->item(1); 
+                } else {
+                    $statstable = $finder->query("//*[contains(@class, 'wikitable alternance2')]")->item(0); 
+                }
             } else {
                 $statstable = $finder->query("//*[contains(@class, 'wikitable alternance2')]")->item(0); 
             }
-            
-
+        
             if(empty($statstable)){
                 $saisons = array(array("20/21","Stade Rennais FC",0,0,0),array("TOTAL","TOTAL",0,0,0));
                 echo "<strong>Problème de redirection sur Wikipedia pour le lien https://fr.wikipedia.org$lnstatsplayer</strong><br>
