@@ -1,0 +1,16 @@
+@charset "UTF-8";
+
+.h11 {
+    font-size: 45px;
+    font-family:"Segoe print", Arial, Helvetica, sans-serif;
+    color: red; 
+     text-align: center;
+    margin-top: 0px;
+    background-image: url("../img/test.png");
+}
+
+* {
+    background-image: url("../img/test2.png");
+    background-repeat: repeat;
+}
+
