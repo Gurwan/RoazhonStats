@@ -346,8 +346,11 @@ class PlayerController extends AbstractController
                     }
                 }
             }
+            $lasts = array_pop($saisons);
+            //print_r($saisons);
+            $saisons = array_reverse($saisons);
         } else {
-            $saisons = array(array("2020-2021","Stade Rennais FC",0,0,0),array("TOTAL","TOTAL",0,0,0));
+            $saisons = array(array("2020-2021","Stade Rennais FC",0,0,0));
             echo "<strong>Le joueur n'a pas de page sur Wikipedia donc pas de stats</strong><br>
                 <strong>Pour régler le problème -> créer une page pour ce joueur sur Wikipédia avec comme URL : https://fr.wikipedia.org/$prenom"."_"."$nom</strong>";
         }

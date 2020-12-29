@@ -7,8 +7,8 @@
 <link href="{{ asset('css/player_view_styles.css') }}" rel="stylesheet"/>
 
 <div class="wrapper">
-    <div style='float: left; margin: 10 10 10 10; '>
-    <img src='{{ photo }}'><br/>
+    <div id="photoDiv">
+        <img src='{{ photo }}'><br/>
     </div>
     <div class="hautdroite">
     <h1> {{numero}}.{{id}} </h1> 
@@ -17,9 +17,9 @@
     <h3> {{taille}} </h3>
     <h3> Expiration du contrat : {{contrat}} </h3>
     </div>
-    <div class="divhr">
-        <hr>
-    </div>
+</div>
+<div>
+    <hr>
     <div class="tableau">
         <table>
             <thead>

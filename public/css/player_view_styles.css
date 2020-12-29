@@ -25,11 +25,6 @@ img {
     grid-column: 1/4;
 }
 
-.tableau {
-    grid-column: 1/4;
-    grid-row:3;
-}
-
 th,td {
     padding: 15px;
     width:1;
@@ -41,7 +36,21 @@ th {
     color: black;
 }
 
+.tableau {
+    display:flex;
+    justify-content:center;
+    align-items:center;
+}
+
 table {
     width:1;
     border-collapse: collapse;
 }
+
+#photoDiv img{
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 30px;
+    display: block;
+}
+
