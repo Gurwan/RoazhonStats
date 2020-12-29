@@ -150,6 +150,9 @@ class PlayerController extends AbstractController
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         $response = curl_exec($ch);
         curl_close($ch);
+
+        
+
       
         $nom = explode(' ',$name);
         $prenom = $nom[0];
@@ -160,6 +163,35 @@ class PlayerController extends AbstractController
                 $nom = $nom[1];
             } else {
                 $nom = $nom[1].'_'.$nom[2];
+            }
+        }
+
+        $dom = new \DOMDocument();
+        @$dom-> loadHTML($response);
+    
+        $finder = new \DomXPath($dom);
+
+        $contrat = $finder->query("//*[contains(@class, 'toccolours centre')]")->item(0); 
+        $rows = $contrat->getElementsByTagName('tr');
+        foreach ($rows as $row) {
+            $contrat = "inconnu";
+            $cells = $row -> getElementsByTagName('td');
+            if(isset($cells[3])){
+                if(isset($nom)){
+                    $nomSansTiret = str_replace('_',' ',$nom);
+                    $cells[3]->nodeValue = str_replace('é','e',$cells[3]->nodeValue);
+                    if(str_contains($cells[3]->nodeValue,$nomSansTiret)){
+                        $contrat = explode("-",$cells[7]->nodeValue);
+                        $contrat = $contrat[1];
+                        break;
+                    }
+                } else {
+                    if(str_contains($cells[3]->nodeValue,$prenom)){
+                        $contrat = explode("-",$cells[7]->nodeValue);
+                        $contrat = $contrat[1];
+                        break;
+                    }
+                }
             }
         }
 
@@ -322,7 +354,7 @@ class PlayerController extends AbstractController
        
         return $this->render('player/player_view.html.twig', [
             'controller_name' => 'PlayerController', 'id' => $name, 'photo' => $images[0], 'numero' => $number, 'poste' => $poste,
-            'nation' => $nationalite, 'age' => $age, 'dateNaissance' => $dateNaissance, 'taille' => $taille, 'tabstats' => $saisons
+            'nation' => $nationalite, 'age' => $age, 'dateNaissance' => $dateNaissance, 'taille' => $taille, 'tabstats' => $saisons, 'contrat' => $contrat
         ]);
     }
 
