@@ -7,60 +7,61 @@
 <link href="{{ asset('css/player_view_styles.css') }}" rel="stylesheet"/>
 <link rel="icon" type="image" href="{{ asset('img/favicon.ico') }}" />
 
-
-<div class="wrapper">
-    <div id="photoDiv">
-        <img src='{{ photo }}'><br/>
+<div class="thegrid">
+    <div class="wrapper">
+        <div id="photoDiv">
+            <img src='{{ photo }}'><br/>
+        </div>
+        <div class="gauche">
+        <h1> {{numero}}. {{id}} </h1> 
+        <h3> {{poste}} </h2> 
+            <h3> {{nation}} - {{age}} ans ({{dateNaissance}}) </h3>    
+            <h3> {{taille}} </h3>
+            <h3> Expiration du contrat : {{contrat}} </h3>
+            <strong>{{error}}</strong>
+        </div>
     </div>
-    <div class="hautdroite">
-    <h1> {{numero}}.{{id}} </h1> 
-    <h3> {{poste}} </h2> 
-    <h3> {{nation}} - {{age}} ans ({{dateNaissance}}) </h3>    
-    <h3> {{taille}} </h3>
-    <h3> Expiration du contrat : {{contrat}} </h3>
+    <div class="griddroite">
+        <div class="tableau">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Year</th>
+                        <th>Team</th>
+                        <th>Apps</th>
+                        <th>Goals</th>
+                        <th>Assists</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for t in tabstats %}
+                        <tr>
+                            <td>{{t[0]}}</td>
+                            <td>{{t[1]}}</td>
+                            <td>{{t[2]}}</td>
+                            <td>{{t[3]}}</td>
+                            {% if t[4] is defined %}
+                                <td>{{t[4]}}</td>
+                            {% else %}
+                                <td>-</td>
+                            {% endif %}
+                        </tr>
+                    {% endfor %}
+                        <tr>
+                            <td>Total</td>
+                            <td></td>
+                            <td>{{total[0]}}</td>
+                            <td>{{total[1]}}</td>
+                            {% if total[2] is defined %}
+                                <td>{{total[2]}}</td>
+                            {% else %}
+                                <td>-</td>
+                            {% endif %}
+                        </tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
-<div>
-    <hr>
-    <div class="tableau">
-        <table>
-            <thead>
-                <tr>
-                    <th>Year</th>
-                    <th>Team</th>
-                    <th>Apps</th>
-                    <th>Goals</th>
-                    <th>Assists</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for t in tabstats %}
-                    <tr>
-                        <td>{{t[0]}}</td>
-                        <td>{{t[1]}}</td>
-                        <td>{{t[2]}}</td>
-                        <td>{{t[3]}}</td>
-                        {% if t[4] is defined %}
-                            <td>{{t[4]}}</td>
-                        {% else %}
-                            <td>-</td>
-                        {% endif %}
-                    </tr>
-                {% endfor %}
-                    <tr>
-                        <td>Total</td>
-                        <td></td>
-                        <td>{{total[0]}}</td>
-                        <td>{{total[1]}}</td>
-                        {% if total[2] is defined %}
-                            <td>{{total[2]}}</td>
-                        {% else %}
-                            <td>-</td>
-                        {% endif %}
-                    </tr>
-            </tbody>
-        </table>
-    </div>
 
-</div>
 {% endblock %}

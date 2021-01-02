@@ -12,6 +12,7 @@
 * {
     background-image: url("../img/background_red.png");
     background-repeat: repeat;
+    font: 1.2em "Fira Sans", sans-serif;
 }
 
 img {

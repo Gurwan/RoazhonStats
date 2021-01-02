@@ -254,9 +254,9 @@ class PlayerController extends AbstractController
             }
         
             if(empty($statstable)){
-                $saisons = array(array("20/21","Stade Rennais FC",0,0,0),array("TOTAL","TOTAL",0,0,0));
-                echo "<strong>Problème de redirection sur Wikipedia pour le lien https://fr.wikipedia.org$lnstatsplayer</strong><br>
-                <strong>Pour régler le problème -> créer une redirection vers la bonne page depuis Wikipédia</strong>";
+                $saisons = array(array("2020/2021","Stade Rennais FC",0,0,0),array("TOTAL","",0,0,0));
+                $error = "Problème de redirection sur Wikipedia pour le lien https://fr.wikipedia.org$lnstatsplayer.
+                Pour régler le problème -> créer une redirection vers la bonne page depuis Wikipédia.";
                 $total = array(0,0,0);
             } else {
                 $th = $statstable->getElementsByTagName('th');
@@ -354,19 +354,20 @@ class PlayerController extends AbstractController
                     }
                     
                 }
+                $error = "";
             }
             $lasts = array_pop($saisons);
             $saisons = array_reverse($saisons);
         } else {
             $saisons = array(array("2020-2021","Stade Rennais FC",0,0,0));
-            echo "<strong>Le joueur n'a pas de page sur Wikipedia donc pas de stats</strong><br>
-                <strong>Pour régler le problème -> créer une page pour ce joueur sur Wikipédia avec comme URL : https://fr.wikipedia.org/$prenom"."_"."$nom</strong>";
+            $error = "Le joueur n'a pas de page sur Wikipedia donc pas de stats.
+                Pour régler le problème -> créer une page pour ce joueur sur Wikipédia avec comme URL : https://fr.wikipedia.org/$prenom"."_"."$nom";
             $total = array(0,0,0);
         }
        
         return $this->render('player/player_view.html.twig', [
             'controller_name' => 'PlayerController', 'id' => $name, 'photo' => $images[0], 'numero' => $number, 'poste' => $poste,
-            'nation' => $nationalite, 'age' => $age, 'dateNaissance' => $dateNaissance, 'taille' => $taille, 'tabstats' => $saisons, 'contrat' => $contrat, 'total' => $total
+            'nation' => $nationalite, 'age' => $age, 'dateNaissance' => $dateNaissance, 'taille' => $taille, 'tabstats' => $saisons, 'contrat' => $contrat, 'total' => $total, 'error' => $error
         ]);
     }
 
