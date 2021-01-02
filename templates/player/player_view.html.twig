@@ -45,6 +45,17 @@
                         {% endif %}
                     </tr>
                 {% endfor %}
+                    <tr>
+                        <td>Total</td>
+                        <td></td>
+                        <td>{{total[0]}}</td>
+                        <td>{{total[1]}}</td>
+                        {% if total[2] is defined %}
+                            <td>{{total[2]}}</td>
+                        {% else %}
+                            <td>-</td>
+                        {% endif %}
+                    </tr>
             </tbody>
         </table>
     </div>

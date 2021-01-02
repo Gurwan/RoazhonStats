@@ -257,7 +257,7 @@ class PlayerController extends AbstractController
                 $saisons = array(array("20/21","Stade Rennais FC",0,0,0),array("TOTAL","TOTAL",0,0,0));
                 echo "<strong>Problème de redirection sur Wikipedia pour le lien https://fr.wikipedia.org$lnstatsplayer</strong><br>
                 <strong>Pour régler le problème -> créer une redirection vers la bonne page depuis Wikipédia</strong>";
-                //doku grenier lea siliki traore
+                $total = array(0,0,0);
             } else {
                 $th = $statstable->getElementsByTagName('th');
                 $assists = false;
@@ -336,7 +336,8 @@ class PlayerController extends AbstractController
                         $j++;
                     }
                 }
-            
+
+                $total = array(0,0,0);
                 for($j = 0; $j<count($saisons);$j++){
                     if(empty($saisons[$j][0])){
                         continue;
@@ -344,20 +345,28 @@ class PlayerController extends AbstractController
                     if($saisons[$j][1]==" Stade rennais FC" || $saisons[$j][1]==" Stade rennais FC " || $saisons[$j][1]=="Stade rennais FC " || $saisons[$j][1]=="Stade rennais FC"){
                         $saisons[$j][1]="Stade Rennais FC";
                     }
+                    $total[0] = $total[0] + (int)$saisons[$j][2];
+                    $total[1] = $total[1] + (int)$saisons[$j][3];
+                    if(isset($saisons[$j][4])){
+                        $total[2] = $total[2] + (int)$saisons[$j][4];
+                    } else {
+                        unset($total[2]);
+                    }
+                    
                 }
             }
             $lasts = array_pop($saisons);
-            //print_r($saisons);
             $saisons = array_reverse($saisons);
         } else {
             $saisons = array(array("2020-2021","Stade Rennais FC",0,0,0));
             echo "<strong>Le joueur n'a pas de page sur Wikipedia donc pas de stats</strong><br>
                 <strong>Pour régler le problème -> créer une page pour ce joueur sur Wikipédia avec comme URL : https://fr.wikipedia.org/$prenom"."_"."$nom</strong>";
+            $total = array(0,0,0);
         }
        
         return $this->render('player/player_view.html.twig', [
             'controller_name' => 'PlayerController', 'id' => $name, 'photo' => $images[0], 'numero' => $number, 'poste' => $poste,
-            'nation' => $nationalite, 'age' => $age, 'dateNaissance' => $dateNaissance, 'taille' => $taille, 'tabstats' => $saisons, 'contrat' => $contrat
+            'nation' => $nationalite, 'age' => $age, 'dateNaissance' => $dateNaissance, 'taille' => $taille, 'tabstats' => $saisons, 'contrat' => $contrat, 'total' => $total
         ]);
     }
 
