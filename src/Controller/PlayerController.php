@@ -357,6 +357,8 @@ class PlayerController extends AbstractController
                 $error = "";
             }
             $lasts = array_pop($saisons);
+            $columns = array_column($saisons,0);
+            array_multisort($columns, SORT_ASC, $saisons);
             $saisons = array_reverse($saisons);
         } else {
             $saisons = array(array("2020-2021","Stade Rennais FC",0,0,0));
