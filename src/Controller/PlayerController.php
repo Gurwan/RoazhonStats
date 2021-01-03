@@ -21,39 +21,33 @@ class PlayerController extends AbstractController
      */
     public function index(): Response
     {
-        //http://rougememoire.com/player/serhou-guirassy/
-        $url = 'http://www.sofascore.com/team/football/stade-rennais/1658/'; //'http://www.sofascore.com/team/football/stade-rennais/1658/'
+        $url = 'http://www.sofascore.com/team/football/stade-rennais/1658/'; 
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, TRUE);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 
-        //"!https://www.sofascore.com/images/player/image_139228.png!"
-
         $response = curl_exec($ch);
         
-        preg_match_all("!player/[a-z][^\s]*?/[0-9]*?!",$response,$matcheslnplayers);
-        preg_match_all("!https://www.sofascore.com/images/player/image_[0-9]*?.png!",$response,$matchesimg);
+        preg_match_all("!player/[a-z][^\s]*?/[0-9]*?!",$response,$matcheslnplayers);  //recupère les URLS vers les profils des joueurs
+        preg_match_all("!https://www.sofascore.com/images/player/image_[0-9]*?.png!",$response,$matchesimg); //recupère les photos des joueurs
 
         $images = array_unique($matchesimg[0]);
         $playersln = array_unique($matcheslnplayers[0]);
        
-
         $thetab = array();
         $j = 0;
         foreach ($images as $i){
             $playerName = explode('/',$playersln[$j]);
             $playerName = $playerName[1];
             $playerName = ucwords(str_replace('-',' ',$playerName));
-            $tab = array($i,$playersln[$j],$playerName);
+            $tab = array($i,$playersln[$j],$playerName); //fais un tableau avec l'URL du joueur et sa photo
             array_push($thetab,$tab);
             $j++;
         }
 
         curl_close($ch);
-
-        
 
         return $this->render('player/index.html.twig', [
             'controller_name' => 'PlayerController', 'tab' => $thetab
@@ -65,8 +59,6 @@ class PlayerController extends AbstractController
      */
     public function show_player($id): Response
     {
-        
-
         $url = 'http://www.sofascore.com/team/football/stade-rennais/1658/';
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
@@ -78,7 +70,7 @@ class PlayerController extends AbstractController
 
         curl_close($ch);
 
-        preg_match_all("!player/[a-z][^\s]*/?!",$response,$lna);
+        preg_match_all("!player/[a-z][^\s]*/?!",$response,$lna); //recupère les URLS vers les profils des joueurs
         $ln = array_unique($lna[0]);
      
         foreach($ln as $l){
@@ -87,12 +79,13 @@ class PlayerController extends AbstractController
             }
         }
 
+        //supprime le contenu indesirable récupéré
         $lnplayer = explode(">",$lnplayer,2);
         $lnplayer = $lnplayer[0];
         $lnplayer = explode('"',$lnplayer,2);
-        $lnplayer = $lnplayer[0];
+        $lnplayer = $lnplayer[0];  
 
-        $url = "http://www.sofascore.com/$lnplayer";
+        $url = "http://www.sofascore.com/$lnplayer"; //récupère l'URL du joueur visé
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
@@ -101,21 +94,21 @@ class PlayerController extends AbstractController
         $response = curl_exec($ch);
         curl_close($ch);
 
+        //correction d'un nom de joueur mal écrit
         if($id=="sehrou-guirassy"){
             $id = "serhou-guirassy";
         }
 
-        $name = ucwords(str_replace('-',' ',$id));
+        $name = ucwords(str_replace('-',' ',$id)); 
        
-
-        preg_match_all("!https://www.sofascore.com/images/player/image_[0-9]*?.png!",$response,$matchesimg);
+        preg_match_all("!https://www.sofascore.com/images/player/image_[0-9]*?.png!",$response,$matchesimg); //recupère l'image du joueur
         $images = array_unique($matchesimg[0]);
     
         $dom = new \DOMDocument();
         @$dom-> loadHTML($response);
 
         $finder = new \DomXPath($dom);
-        $sousf = $finder->query("//*[contains(@class, 'styles__DetailBoxContent-sc-1ss54tr-12 ExNjU')]"); 
+        $sousf = $finder->query("//*[contains(@class, 'styles__DetailBoxContent-sc-1ss54tr-12 ExNjU')]"); //charge les statistiques propres au joueur (taille,age..)
         $dateNaissance = $sousf[1]->textContent;
 
         //bon pied manquant pour certains joueurs
@@ -151,9 +144,7 @@ class PlayerController extends AbstractController
         $response = curl_exec($ch);
         curl_close($ch);
 
-        
-
-      
+        //deconstruction du nom pour faire face aux différents cas : un prénom sans nom, un nom avec particule, un nom simple.
         $nom = explode(' ',$name);
         $prenom = $nom[0];
         if(empty($nom[1])){
@@ -171,7 +162,7 @@ class PlayerController extends AbstractController
     
         $finder = new \DomXPath($dom);
 
-        $contrat = $finder->query("//*[contains(@class, 'toccolours centre')]")->item(0); 
+        $contrat = $finder->query("//*[contains(@class, 'toccolours centre')]")->item(0);  //recupère la date d'expiration du contrat
         $rows = $contrat->getElementsByTagName('tr');
         foreach ($rows as $row) {
             $contrat = "inconnu";
@@ -195,9 +186,10 @@ class PlayerController extends AbstractController
             }
         }
 
-        preg_match_all("!\/wiki\/[A-z][^\s]*!",$response,$lnallnamewiki);
+        preg_match_all("!\/wiki\/[A-z][^\s]*!",$response,$lnallnamewiki); //recupère l'URL des joueurs vers leurs pages wikipédia
         $lnallnamewiki = array_unique($lnallnamewiki[0]);
         
+        //recupère l'URL souhaitée
         if(isset($nom)){
             foreach($lnallnamewiki as $l){
                 if(str_contains($l,$nom) && str_contains($l,$prenom)){
@@ -213,7 +205,6 @@ class PlayerController extends AbstractController
                 }
             }
         }
-        
 
         if(!(isset($lnstatsplayer))){
             foreach($lnallnamewiki as $l){
@@ -250,10 +241,12 @@ class PlayerController extends AbstractController
                     $statstable = $finder->query("//*[contains(@class, 'wikitable alternance2')]")->item(0); 
                 }
             } else {
+                //recupère les statistiques carrière du joueur
                 $statstable = $finder->query("//*[contains(@class, 'wikitable alternance2')]")->item(0); 
             }
         
             if(empty($statstable)){
+                //page wikipédia non trouvée pour le joueur
                 $saisons = array(array("2020/2021","Stade Rennais FC",0,0,0),array("TOTAL","",0,0,0));
                 $error = "Problème de redirection sur Wikipedia pour le lien https://fr.wikipedia.org$lnstatsplayer.
                 Pour régler le problème -> créer une redirection vers la bonne page depuis Wikipédia.";
@@ -262,6 +255,7 @@ class PlayerController extends AbstractController
                 $th = $statstable->getElementsByTagName('th');
                 $assists = false;
                 foreach($th as $t){
+                    //vérification de la présence des passes décisives
                     if($t->nodeValue == "Pd"){
                         $assists = true;
                         break;
@@ -270,20 +264,21 @@ class PlayerController extends AbstractController
                 $rows = $statstable->getElementsByTagName('tr');
                 $saisons = array();
                 $j = 0;
+                //si passes décisives dispo
                 if($assists){
                     foreach ($rows as $row) {
                         $cells = $row -> getElementsByTagName('td');
                         $line = array();
                         $i = 0;
                         if(isset($cells[1]->nodeValue)){
-                            //eviter d'enregistrer les sous totaux
+                            //éviter d'enregistrer les sous totaux
                             if(is_numeric($cells[1]->nodeValue) && $j!= count($rows)-1){
                                 $j++;
                                 continue;
                             } else {
                                 $passageTotal = true;
                                 foreach ($cells as $cell) {
-                                    //eviter d'enregistrer le total entier
+                                    //éviter d'enregistrer le total entier
                                     if($j != count($rows)-1){
                                         if($i==0 || $i==1 || $i==count($cells)-3 || $i==count($cells)-2 || $i==count($cells)-1){
                                             array_push($line,$cell->nodeValue);
@@ -345,6 +340,8 @@ class PlayerController extends AbstractController
                     if($saisons[$j][1]==" Stade rennais FC" || $saisons[$j][1]==" Stade rennais FC " || $saisons[$j][1]=="Stade rennais FC " || $saisons[$j][1]=="Stade rennais FC"){
                         $saisons[$j][1]="Stade Rennais FC";
                     }
+
+                    //calcul du total sur la carrière des buts, apparitions et passes décisives
                     $total[0] = $total[0] + (int)$saisons[$j][2];
                     $total[1] = $total[1] + (int)$saisons[$j][3];
                     if(isset($saisons[$j][4])){
@@ -361,6 +358,7 @@ class PlayerController extends AbstractController
             array_multisort($columns, SORT_ASC, $saisons);
             $saisons = array_reverse($saisons);
         } else {
+            //page wikipédia inexistante pour le joueur
             $saisons = array(array("2020-2021","Stade Rennais FC",0,0,0));
             $error = "Le joueur n'a pas de page sur Wikipedia donc pas de stats.
                 Pour régler le problème -> créer une page pour ce joueur sur Wikipédia avec comme URL : https://fr.wikipedia.org/$prenom"."_"."$nom";
