@@ -31,21 +31,34 @@ class PlayerController extends AbstractController
         $response = curl_exec($ch);
         
         preg_match_all("!player/[a-z][^\s]*?/[0-9]*?!",$response,$matcheslnplayers);  //recupère les URLS vers les profils des joueurs
-        preg_match_all("!https://www.sofascore.com/images/player/image_[0-9]*?.png!",$response,$matchesimg); //recupère les photos des joueurs
 
-        $images = array_unique($matchesimg[0]);
         $playersln = array_unique($matcheslnplayers[0]);
        
         $thetab = array();
         $j = 0;
-        foreach ($images as $i){
+        foreach ($playersln as $p){
             $playerName = explode('/',$playersln[$j]);
             $playerName = $playerName[1];
             $playerName = ucwords(str_replace('-',' ',$playerName));
-            $tab = array($i,$playersln[$j],$playerName); //fais un tableau avec l'URL du joueur et sa photo
+            $playerName = str_replace(' ','+',$playerName);
+            $urlp = "https://www.google.com/search?q=$playerName&tbm=isch"; //récupère l'URL du joueur visé
+            $chp = curl_init();
+            curl_setopt($chp, CURLOPT_URL, $urlp);
+            curl_setopt($chp, CURLOPT_SSL_VERIFYPEER, false);
+            curl_setopt($chp, CURLOPT_FOLLOWLOCATION, TRUE);
+            curl_setopt($chp, CURLOPT_RETURNTRANSFER, 1);
+            $responsep = curl_exec($chp);
+            curl_close($chp);
+            $dom = new \DOMDocument();
+            @$dom-> loadHTML($responsep);
+            $finder = new \DomXPath($dom);
+            $i = $finder->query('//img')->item(1)->getAttribute('src');
+            $playerName = str_replace('+',' ',$playerName);
+            $tab = array($i,$p,$playerName); //fais un tableau avec l'URL du joueur et sa photo
             array_push($thetab,$tab);
             $j++;
         }
+
 
         curl_close($ch);
 
@@ -100,9 +113,20 @@ class PlayerController extends AbstractController
         }
 
         $name = ucwords(str_replace('-',' ',$id)); 
-       
-        preg_match_all("!https://www.sofascore.com/images/player/image_[0-9]*?.png!",$response,$matchesimg); //recupère l'image du joueur
-        $images = array_unique($matchesimg[0]);
+
+        $playerName = str_replace(' ','+',$name);
+        $urlp = "https://www.google.com/search?q=$playerName&tbm=isch"; //récupère l'URL du joueur visé
+        $chp = curl_init();
+        curl_setopt($chp, CURLOPT_URL, $urlp);
+        curl_setopt($chp, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($chp, CURLOPT_FOLLOWLOCATION, TRUE);
+        curl_setopt($chp, CURLOPT_RETURNTRANSFER, 1);
+        $responsep = curl_exec($chp);
+        curl_close($chp);
+        $domp = new \DOMDocument();
+        @$domp-> loadHTML($responsep);
+        $finderp = new \DomXPath($domp);
+        $image = $finderp->query('//img')->item(1)->getAttribute('src');
     
         $dom = new \DOMDocument();
         @$dom-> loadHTML($response);
@@ -227,7 +251,7 @@ class PlayerController extends AbstractController
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
             $response = curl_exec($ch);
             curl_close($ch);
-
+            
             $dom = new \DOMDocument();
             @$dom-> loadHTML($response);
     
@@ -236,13 +260,13 @@ class PlayerController extends AbstractController
             //parcours amateur sur page de Grenier
             if(isset($nom)){
                 if($nom=="Grenier"){
-                    $statstable = $finder->query("//*[contains(@class, 'wikitable alternance2')]")->item(1); 
+                    $statstable = $finder->query("//*[contains(@class, 'wikitable fstats alternance2')]")->item(1); 
                 } else {
-                    $statstable = $finder->query("//*[contains(@class, 'wikitable alternance2')]")->item(0); 
+                    $statstable = $finder->query("//*[contains(@class, 'wikitable fstats alternance2')]")->item(0); 
                 }
             } else {
                 //recupère les statistiques carrière du joueur
-                $statstable = $finder->query("//*[contains(@class, 'wikitable alternance2')]")->item(0); 
+                $statstable = $finder->query("//*[contains(@class, 'wikitable fstats alternance2')]")->item(0); 
             }
         
             if(empty($statstable)){
@@ -337,8 +361,15 @@ class PlayerController extends AbstractController
                     if(empty($saisons[$j][0])){
                         continue;
                     }
-                    if($saisons[$j][1]==" Stade rennais FC" || $saisons[$j][1]==" Stade rennais FC " || $saisons[$j][1]=="Stade rennais FC " || $saisons[$j][1]=="Stade rennais FC"){
+
+                    if(str_contains($saisons[$j][1],"rennais")){
                         $saisons[$j][1]="Stade Rennais FC";
+                    }
+
+                    $l = 1;
+                    while(str_contains($saisons[$j][1],"Ligue")){
+                        $saisons[$j][1] = $saisons[$j-$l][1];
+                        $l++;
                     }
 
                     //calcul du total sur la carrière des buts, apparitions et passes décisives
@@ -366,7 +397,7 @@ class PlayerController extends AbstractController
         }
        
         return $this->render('player/player_view.html.twig', [
-            'controller_name' => 'PlayerController', 'id' => $name, 'photo' => $images[0], 'numero' => $number, 'poste' => $poste,
+            'controller_name' => 'PlayerController', 'id' => $name, 'photo' => $image, 'numero' => $number, 'poste' => $poste,
             'nation' => $nationalite, 'age' => $age, 'dateNaissance' => $dateNaissance, 'taille' => $taille, 'tabstats' => $saisons, 'contrat' => $contrat, 'total' => $total, 'error' => $error
         ]);
     }
