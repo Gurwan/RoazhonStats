@@ -13,7 +13,10 @@ class PlayerController extends AbstractController
      */
     public function main(): Response 
     {
-        return $this->redirect('/player');
+        
+        return $this->render('index.html.twig', [
+            'controller_name' => 'PlayerController' ]);
+        //return $this->redirect('/player');
     }
 
     /**
@@ -62,7 +65,7 @@ class PlayerController extends AbstractController
 
         curl_close($ch);
 
-        return $this->render('player/index.html.twig', [
+        return $this->render('player/players.html.twig', [
             'controller_name' => 'PlayerController', 'tab' => $thetab
         ]);
     }
