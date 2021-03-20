@@ -16,12 +16,37 @@ body {
 }
 
 a {
-    background-color: #4CAF50; /* Green */
+    background-color: red; /* Green */
     border: none;
-    color: white;
     padding: 15px 32px;
     text-align: center;
     text-decoration: none;
     display: inline-block;
     font-size: 16px;
+    border-radius: 8px;
+    width: 25%;
+    color:black;
+    font-weight: bold;
+}
+
+a:hover {
+    background-color: black;
+    color:white;
+}
+
+a:active {
+  background-color: red;
+  box-shadow: 0 5px #666;
+  transform: translateY(4px);
+}
+
+.vcenter {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 200px;
+}
+
+.main {
+    width: 100%;
 }
