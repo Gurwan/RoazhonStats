@@ -16,7 +16,6 @@ class PlayerController extends AbstractController
         
         return $this->render('index.html.twig', [
             'controller_name' => 'PlayerController' ]);
-        //return $this->redirect('/player');
     }
 
     /**
@@ -44,7 +43,7 @@ class PlayerController extends AbstractController
             $playerName = $playerName[1];
             $playerName = ucwords(str_replace('-',' ',$playerName));
             $playerName = str_replace(' ','+',$playerName);
-            $urlp = "https://www.google.com/search?q=$playerName&tbm=isch"; //récupère l'URL du joueur visé
+            $urlp = "https://www.google.com/search?q=$playerName+ligue+1&tbm=isch"; //récupère l'URL du joueur visé
             $chp = curl_init();
             curl_setopt($chp, CURLOPT_URL, $urlp);
             curl_setopt($chp, CURLOPT_SSL_VERIFYPEER, false);
@@ -118,7 +117,7 @@ class PlayerController extends AbstractController
         $name = ucwords(str_replace('-',' ',$id)); 
 
         $playerName = str_replace(' ','+',$name);
-        $urlp = "https://www.google.com/search?q=$playerName&tbm=isch"; //récupère l'URL du joueur visé
+        $urlp = "https://www.google.com/search?q=$playerName+ligue+1&tbm=isch"; //récupère l'URL du joueur visé
         $chp = curl_init();
         curl_setopt($chp, CURLOPT_URL, $urlp);
         curl_setopt($chp, CURLOPT_SSL_VERIFYPEER, false);
