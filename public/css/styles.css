@@ -34,6 +34,8 @@ img {
    
 .aComponentPlayer>*{
     grid-area:1/1/-1/-1; 
+    width: 140px;
+    height: 140px;
 }
    
 .spanComponentPlayer{
@@ -56,6 +58,11 @@ img {
 
 .imgComponentPlayer:hover {
     opacity:1;
+}
+
+.imgComponentPlayer {
+    width: 140px;
+    height: 140px;
 }
 
    
