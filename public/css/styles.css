@@ -16,13 +16,15 @@
 }
 
 img {
-    border-radius: 40%;
+    border-radius: 30%;
 }
 
 .playerPicture {
     float: left;  
     margin-top: 20px;
     margin-right: 20px;
+    width: 140px;
+    height: 140px;
 }
 
 .aComponentPlayer{
