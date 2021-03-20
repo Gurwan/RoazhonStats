@@ -23,8 +23,6 @@ img {
     float: left;  
     margin-top: 20px;
     margin-right: 20px;
-    width: 140px;
-    height: 140px;
 }
 
 .aComponentPlayer{
@@ -34,8 +32,6 @@ img {
    
 .aComponentPlayer>*{
     grid-area:1/1/-1/-1; 
-    width: 140px;
-    height: 140px;
 }
    
 .spanComponentPlayer{
@@ -48,8 +44,6 @@ img {
     font-family:"Segoe print", Arial, Helvetica, sans-serif;
     opacity:0;
     transition:opacity .8s;
-    width: 140px;
-    height: 140px;
 }
 
 .spanComponentPlayer:hover{
