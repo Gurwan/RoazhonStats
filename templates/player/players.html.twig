@@ -14,13 +14,15 @@
     </div>
 
     <div>
-        {% for t in tab %}
+        {% set i = 0 %}
+        {% for p in players %}
             <div class="playerPicture">
-                <a class="aComponentPlayer" href='{{ t[1] }}'>
-                    <img class="imgComponentPlayer" src='{{ t[0] }}'><br/>
-                    <span class="spanComponentPlayer">{{ t[2] }}</span>
+                <a class="aComponentPlayer" href='#'>
+                    <img class="imgComponentPlayer" src='{{ p.image }}'><br/>
+                    <span class="spanComponentPlayer">{{ p.firstname }} {{ p.lastname }}</span>
                 </a>
             </div>
+            {% set i = i + 1 %}
         {% endfor %}
     </div>
 

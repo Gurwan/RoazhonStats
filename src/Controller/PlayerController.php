@@ -5,6 +5,7 @@ namespace App\Controller;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use App\Entity\Player;
 
 class PlayerController extends AbstractController
 {
@@ -23,49 +24,92 @@ class PlayerController extends AbstractController
      */
     public function index(): Response
     {
-        $url = 'http://www.sofascore.com/team/football/stade-rennais/1658/'; 
+        $url = 'https://fr.wikipedia.org/wiki/Stade_rennais_football_club#Effectif_professionnel_actuel';
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, TRUE);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-
         $response = curl_exec($ch);
-        
-        preg_match_all("!player/[a-z][^\s]*?/[0-9]*?!",$response,$matcheslnplayers);  //recupère les URLS vers les profils des joueurs
-
-        $playersln = array_unique($matcheslnplayers[0]);
-       
-        $thetab = array();
-        $j = 0;
-        foreach ($playersln as $p){
-            $playerName = explode('/',$playersln[$j]);
-            $playerName = $playerName[1];
-            $playerName = ucwords(str_replace('-',' ',$playerName));
-            $playerName = str_replace(' ','+',$playerName);
-            $urlp = "https://www.google.com/search?q=$playerName+ligue+1&tbm=isch"; //récupère l'URL du joueur visé
-            $chp = curl_init();
-            curl_setopt($chp, CURLOPT_URL, $urlp);
-            curl_setopt($chp, CURLOPT_SSL_VERIFYPEER, false);
-            curl_setopt($chp, CURLOPT_FOLLOWLOCATION, TRUE);
-            curl_setopt($chp, CURLOPT_RETURNTRANSFER, 1);
-            $responsep = curl_exec($chp);
-            curl_close($chp);
-            $dom = new \DOMDocument();
-            @$dom-> loadHTML($responsep);
-            $finder = new \DomXPath($dom);
-            $i = $finder->query('//img')->item(1)->getAttribute('src');
-            $playerName = str_replace('+',' ',$playerName);
-            $tab = array($i,$p,$playerName); //fais un tableau avec l'URL du joueur et sa photo
-            array_push($thetab,$tab);
-            $j++;
-        }
-
-
         curl_close($ch);
 
+        $dom = new \DOMDocument();
+        @$dom-> loadHTML($response);
+    
+        $finder = new \DomXPath($dom);
+
+        $manager = $this->getDoctrine()->getManager();
+
+        $table = $finder->query("//*[contains(@class, 'toccolours centre')]")->item(0);  //recupère la date d'expiration du contrat
+        $rows = $table->getElementsByTagName('tr');
+        $i = 0;
+        foreach ($rows as $row) {
+            if($i>1){
+                $player = new Player();
+                $cells = $row ->getElementsByTagName('td');
+                if (!empty($cells[0]->nodeValue)) {
+                    $player->setNumber(intval($cells[0]->nodeValue));
+                }
+                if (!empty($cells[1]->nodeValue)) {
+                    $player->setPoste($cells[1]->nodeValue);
+                }
+                if (!empty($cells[3]->nodeValue)) {
+                    $names = explode(" ",$cells[3]->nodeValue);
+                    if(count($names) == 3){
+                        $firstname = substr($names[1],strlen($names[1])/2);
+                        $player->setFirstname($firstname);
+                        $lastname = explode(" ",$names[2])[0];
+                        $lastname = str_replace("\n","",$lastname);
+                        $player->setLastname($lastname);
+                    } else {
+                        $firstname = substr($names[2],strlen($names[2])/2);
+                        $player->setFirstname($firstname);
+                        $lastname = $names[3] . ' ' . explode(",",$names[1])[0];
+                        $player->setLastname($lastname);
+                    }
+                   
+                    $playerExists = $this->getDoctrine()->getRepository(Player::class)->findOneBy([
+                        'firstname' => $firstname, 'lastname' => $lastname
+                    ]);
+                    if($playerExists!=null){
+                        continue;
+                    } 
+
+                    $fullname = $player->getFirstname() . '+' . $player->getLastname();
+                    $fullname = str_replace(" ","+",$fullname);
+                    $urlp = "https://www.google.com/search?q=$fullname+ligue+1&tbm=isch"; //récupère l'URL du joueur visé
+                    $chp = curl_init();
+                    curl_setopt($chp, CURLOPT_URL, $urlp);
+                    curl_setopt($chp, CURLOPT_SSL_VERIFYPEER, false);
+                    curl_setopt($chp, CURLOPT_FOLLOWLOCATION, TRUE);
+                    curl_setopt($chp, CURLOPT_RETURNTRANSFER, 1);
+                    $responsep = curl_exec($chp);
+                    curl_close($chp);
+                    $dom = new \DOMDocument();
+                    @$dom-> loadHTML($responsep);
+                    $finder = new \DomXPath($dom);
+                    $image = $finder->query('//img')->item(1)->getAttribute('src');
+                    $player->setImage($image);
+                }
+
+                if (!empty($cells[4]->nodeValue)) {
+                    $birthdate = explode("(",$cells[4]->nodeValue)[0];
+                    $bdate = \DateTime::createFromFormat('d-m-Y',$birthdate);
+                    $bd = new \DateTime($bdate);
+                    $player->setBirthdate($bd);
+                    $player->setNationality(" ");
+                    $manager->persist($player);
+                }
+                
+            }
+            $i++;
+        }
+        $manager->flush();
+
+        $players = $this->getDoctrine()->getRepository(Player::class)->findAll();
+        
         return $this->render('player/players.html.twig', [
-            'controller_name' => 'PlayerController', 'tab' => $thetab
+            'players' => $players
         ]);
     }
 
