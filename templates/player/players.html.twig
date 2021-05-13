@@ -12,12 +12,11 @@
     <div>
         <h1 class="h11"> SRFC Squad </h1>
     </div>
-
     <div>
         {% set i = 0 %}
         {% for p in players %}
             <div class="playerPicture">
-                <a class="aComponentPlayer" href='#'>
+                <a class="aComponentPlayer" href=" {{ path('player_show', {'firstname' : p.firstname, 'lastname' : p.lastname}) }} ">
                     <img class="imgComponentPlayer" src='{{ p.image }}'><br/>
                     <span class="spanComponentPlayer">{{ p.firstname }} {{ p.lastname }}</span>
                 </a>

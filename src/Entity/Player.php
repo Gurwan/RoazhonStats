@@ -52,6 +52,11 @@ class Player
      */
     private $image;
 
+    /**
+     * @ORM\Column(type="string", length=500, nullable=true)
+     */
+    private $Wikilink;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -137,6 +142,18 @@ class Player
     public function setImage(string $image): self
     {
         $this->image = $image;
+
+        return $this;
+    }
+
+    public function getWikilink(): ?string
+    {
+        return $this->Wikilink;
+    }
+
+    public function setWikilink(?string $Wikilink): self
+    {
+        $this->Wikilink = $Wikilink;
 
         return $this;
     }
