@@ -6,6 +6,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use App\Entity\Player;
+use App\Entity\Statistics;
 
 class PlayerController extends AbstractController
 {
@@ -144,20 +145,163 @@ class PlayerController extends AbstractController
                 }
             }
         }
+
         if($player->getWikilink() == null){
-            return $this->redirectToRoute('player');
+            if($player->getStatistics()==null){
+                $stats = new Statistics();
+                $stats->setSeason("2020/2021");
+                $stats->setAppearances(0);
+                $stats->setGoals(0);
+                $stats->setAssists(0);
+                $stats->setClub("Stade Rennais FC");
+                $stats->setPlayer($player);
+                $player->setStatistics($stats);
+                $manager->persist($stats);
+            }
         } else {
-            $manager->persist($player);
-            $manager->flush();
-        }
+            if($player->getStatistics()->count() == 0){
+                $wikilink = $player->getWikilink();
+                $wikilink = substr($wikilink,0,-1);
+                $url = "https://fr.wikipedia.org/$wikilink";
+                $ch = curl_init();
+                curl_setopt($ch, CURLOPT_URL, $url);
+                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+                curl_setopt($ch, CURLOPT_FOLLOWLOCATION, TRUE);
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+                $response = curl_exec($ch);
+                curl_close($ch);
+    
+                $dom = new \DOMDocument();
+                @$dom-> loadHTML($response);
         
-        return $this->redirectToRoute('player');
-        /*
+                $finder = new \DomXPath($dom);
+    
+                if($player->getLastname()=="Grenier"){
+                    $statstable = $finder->query("//*[contains(@class, 'wikitable fstats alternance2')]")->item(1); 
+                } else {
+                    $statstable = $finder->query("//*[contains(@class, 'wikitable fstats alternance2')]")->item(0); 
+                }
+    
+                if(empty($statstable)){
+                    //page wikipédia non trouvée pour le joueur
+                    $stats = new Statistics();
+                    $stats->setSeason("2020-2021");
+                    $stats->setAppearances(0);
+                    $stats->setGoals(0);
+                    $stats->setAssists(0);
+                    $stats->setClub("Stade Rennais FC");
+                    $stats->setPlayer($player);
+                    $player->addStatistic($stats);
+                    $manager->persist($stats);
+                } else {
+                    $th = $statstable->getElementsByTagName('th');
+                    $assists = false;
+                    foreach($th as $t){
+                        //vérification de la présence des passes décisives
+                        if($t->nodeValue == "Pd"){
+                            $assists = true;
+                            break;
+                        }
+                    }
+                    $rows = $statstable->getElementsByTagName('tr');
+                    $j = 0;
+                    //si passes décisives dispo
+                    if($assists){
+                        foreach ($rows as $row) {
+                            $stats = new Statistics();
+                            $cells = $row -> getElementsByTagName('td');
+                            $line = array();
+                            $i = 0;
+                            if(isset($cells[1]->nodeValue)){
+                                //éviter d'enregistrer les sous totaux
+                                if(is_numeric($cells[1]->nodeValue) && $j!= count($rows)-1){
+                                    $j++;
+                                    continue;
+                                } else {
+                                    foreach ($cells as $cell) {
+                                        
+                                        //éviter d'enregistrer le total entier
+                                        if($j != count($rows)-1){
+                                            if($i==0){
+                                                $stats->setSeason($cell->nodeValue);
+                                            } else if($i==1){
+                                                if($cell->nodeValue == " Stade rennais FC  
+                                                "){
+                                                    $stats->setClub("Stade Rennais FC");
+                                                } else {
+                                                    $stats->setClub($cell->nodeValue);
+                                                }
+                                            } else if($i==count($cells)-3){
+                                                $stats->setAppearances($cell->nodeValue);
+                                            } else if($i==count($cells)-2){
+                                                $stats->setGoals($cell->nodeValue);
+                                            } else if($i==count($cells)-1){
+                                                $stats->setAssists(intval($cell->nodeValue));
+                                            }
+                                        }
+                                        $i++;
+                                    }
+                                }
+                            }
+                            $stats->setPlayer($player);
+                            if($stats->getSeason()!=null){
+                                $manager->persist($stats);
+                            }
+                            $j++;
+                        }
+                    } else {
+                        foreach ($rows as $row) {
+                            $stats = new Statistics();
+                            $cells = $row -> getElementsByTagName('td');
+                            $line = array();
+                            $i = 0;
+                            if(isset($cells[1]->nodeValue)){
+                                //eviter d'enregistrer les sous totaux
+                                if(is_numeric($cells[1]->nodeValue) && $j!= count($rows)-1){
+                                    $j++;
+                                    continue;
+                                } else {
+                                    foreach ($cells as $cell) {
+                                        //eviter d'enregistrer le total entier
+                                        if($j != count($rows)-1){
+                                            if($i==0){
+                                                $stats->setSeason($cell->nodeValue);
+                                            } else if($i==1){
+                                                if($cell->nodeValue == " Stade rennais FC  
+                                                "){
+                                                    $stats->setClub("Stade Rennais FC");
+                                                } else {
+                                                    $stats->setClub($cell->nodeValue);
+                                                }
+                                            } else if($i==count($cells)-2){
+                                                $stats->setAppearances($cell->nodeValue);
+                                            } else if($i==count($cells)-1){
+                                                $stats->setGoals(intval($cell->nodeValue));
+                                               
+                                            }
+                                        }
+                                        $i++;
+                                        
+                                    }
+                                }
+                            }
+                            $j++;
+                            $stats->setAssists(0);
+                            $stats->setPlayer($player);
+                            if($stats->getSeason()!=null){
+                                $manager->persist($stats);
+                            }
+                        }
+                    }
+                }
+                $manager->persist($player);
+            }       
+        }
+        $manager->flush();
+        
         return $this->render('player/player_view.html.twig', [
-            'controller_name' => 'PlayerController', 'id' => $name, 'photo' => $image, 'numero' => $number, 'poste' => $poste,
-            'nation' => $nationalite, 'age' => $age, 'dateNaissance' => $dateNaissance, 'taille' => $taille, 'tabstats' => $saisons, 'contrat' => $contrat, 'total' => $total, 'error' => $error
+            'player' => $player
         ]);
-        */
     }
 
 

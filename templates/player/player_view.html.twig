@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}{{id}}{% endblock %}
+{% block title %}{{player.firstname}} {{player.lastname}}{% endblock %}
 
 {% block body %}
 
@@ -10,15 +10,14 @@
 <div class="thegrid">
     <div class="wrapper">
         <div id="photoDiv">
-            <img src='{{ photo }}'><br/>
+            <img src='{{ player.image }}'><br/>
         </div>
         <div class="gauche">
-        <h1> {{numero}}. {{id}} </h1> 
-        <h3> {{poste}} </h2> 
-            <h3> {{nation}} - {{age}} ans ({{dateNaissance}}) </h3>    
-            <h3> {{taille}} </h3>
-            <h3> Expiration du contrat : {{contrat}} </h3>
-            <strong>{{error}}</strong>
+        <h1> {{player.number}}. {{player.firstname}} {{player.lastname}} </h1> 
+        <h3> {{player.poste}} </h2> 
+            <h3> {{player.nationality}} - age ans ({{player.birthdate |date("d/m/Y")}}) </h3>    
+            <h3> taille </h3>
+            <h3> Expiration du contrat : contrat </h3>
         </div>
     </div>
     <div class="griddroite">
@@ -34,29 +33,27 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for t in tabstats %}
+                    {% set tApp = 0 %}
+                    {% set tGoals = 0 %}
+                    {% set tAssists = 0 %}
+                    {% for t in player.statistics %}
                         <tr>
-                            <td>{{t[0]}}</td>
-                            <td>{{t[1]}}</td>
-                            <td>{{t[2]}}</td>
-                            <td>{{t[3]}}</td>
-                            {% if t[4] is defined %}
-                                <td>{{t[4]}}</td>
-                            {% else %}
-                                <td>-</td>
-                            {% endif %}
+                            <td>{{t.season}}</td>
+                            <td>{{t.club}}</td>
+                            <td>{{t.appearances}}</td>
+                            <td>{{t.goals}}</td>
+                            <td>{{t.assists}}</td>
                         </tr>
+                        {% set tApp = tApp + t.appearances %}
+                        {% set tGoals = tGoals + t.goals %}
+                        {% set tAssists = tAssists + t.assists %}
                     {% endfor %}
                         <tr>
                             <td>Total</td>
                             <td></td>
-                            <td>{{total[0]}}</td>
-                            <td>{{total[1]}}</td>
-                            {% if total[2] is defined %}
-                                <td>{{total[2]}}</td>
-                            {% else %}
-                                <td>-</td>
-                            {% endif %}
+                            <td>{{tApp}}</td>
+                            <td>{{tGoals}}</td>
+                            <td>{{tAssists}}</td>
                         </tr>
                 </tbody>
             </table>

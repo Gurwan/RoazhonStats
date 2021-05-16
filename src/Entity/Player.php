@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\PlayerRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -55,7 +57,17 @@ class Player
     /**
      * @ORM\Column(type="string", length=500, nullable=true)
      */
-    private $Wikilink;
+    private $wikilink;
+
+    /**
+     * @ORM\OneToMany(targetEntity=Statistics::class, mappedBy="player", orphanRemoval=true)
+     */
+    private $statistics;
+
+    public function __construct()
+    {
+        $this->statistics = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -148,12 +160,42 @@ class Player
 
     public function getWikilink(): ?string
     {
-        return $this->Wikilink;
+        return $this->wikilink;
     }
 
-    public function setWikilink(?string $Wikilink): self
+    public function setWikilink(?string $wikilink): self
     {
-        $this->Wikilink = $Wikilink;
+        $this->wikilink = $wikilink;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Statistics[]
+     */
+    public function getStatistics(): Collection
+    {
+        return $this->statistics;
+    }
+
+    public function addStatistic(Statistics $statistic): self
+    {
+        if (!$this->statistics->contains($statistic)) {
+            $this->statistics[] = $statistic;
+            $statistic->setPlayer($this);
+        }
+
+        return $this;
+    }
+
+    public function removeStatistic(Statistics $statistic): self
+    {
+        if ($this->statistics->removeElement($statistic)) {
+            // set the owning side to null (unless already changed)
+            if ($statistic->getPlayer() === $this) {
+                $statistic->setPlayer(null);
+            }
+        }
 
         return $this;
     }
